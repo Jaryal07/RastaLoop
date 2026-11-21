@@ -1,0 +1,14 @@
+node_modules/
+.next/
+.vercel/
+.rastaloop/
+supabase/.temp/
+.env*
+!.env.example
+next-env.d.ts
+*.tsbuildinfo
+test-results/
+__pycache__/
+output/video/
+output/social/
+tmp/
