@@ -8,7 +8,7 @@ const record = process.env.RASTALOOP_RECORD === '1'
 const output = 'tmp/browser'
 
 async function waitingForButton(page, name) {
-  const button = page.getByRole('button', { name })
+  const button = page.getByRole('button', { name, exact: typeof name === 'string' })
   await button.waitFor()
   return button
 }

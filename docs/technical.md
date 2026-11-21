@@ -17,7 +17,8 @@ The graph, observations, and evidence are synthetic. The schematic and distances
 | Next.js, React, TypeScript | Website, API, graph and workflow. Dependency versions are in `package-lock.json`. |
 | Node.js, SQLite, Supabase Postgres, Vercel | Local runtime and storage. Supabase and Vercel are the hosted deployment target. |
 | HTML Canvas and CSS | Original corridor schematic and brand mark. |
-| Codex and OpenAI ImageGen | Software assistance and the AI-generated illustrative streetscape. |
+| Codex and OpenAI ImageGen | Software assistance and the AI-generated before-and-after illustrations. |
 | Pillow and ReportLab | Web image preparation and original brand kit PDF. |
+| Playwright, FFmpeg, and Windows Speech | Local production workflow verification, actual browser capture, film encoding, captions, and synthetic narration. |
 | [FixMyStreet](https://fixmystreet.org/running/staff/), [Swachhata](https://www.swachh.city/assets/files/Swachhata_ULB_Admin_Module_FAQ.pdf), [AccessMap](https://sidewalks.washington.edu/2024/06/03/accessmap/) | Feature research. The fixture and software implementation are original. |
 | [MoHUA accessibility guidance](https://depwd.gov.in/en/document/harmonised-guidelines-standards-for-universal-accessibility-in-india-2021/) | Reference for planning the field walk. |

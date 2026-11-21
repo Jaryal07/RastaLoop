@@ -2,6 +2,8 @@
 
 Use new RastaLoop accounts on Instagram and X. Add the organizer tags confirmed in the team portal and both hashtags, **#TutedudeBuildathon #BuildForMyCity**, to every post. Replace `{demo URL}` with the verified public app. Give the hero film time to circulate and share it within communities that allow project posts. Use organic engagement.
 
+The [media release](https://github.com/Jaryal07/RastaLoop/releases/tag/buildathon-media) includes the vertical hero film, a street-question still, and short edits for the route-change and recheck posts.
+
 | Slot | Platform | Draft |
 |---|---|---|
 | 1 | Instagram street still | Think of a trip to a clinic or bus stop. Which crossing or footpath makes that trip harder for you? RastaLoop is exploring what a single blocked ramp can change. |

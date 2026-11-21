@@ -38,6 +38,8 @@ npm run build
 
 With the app running on `http://127.0.0.1:3000`, use `npm run test:live`. Set `RASTALOOP_TEST_URL` to test another origin. The smoke test covers concurrent writes, simulated role permissions, session isolation, and reset.
 
+The browser walkthrough lives in `test/browser.cjs`. It requires Playwright and a Chromium browser. `PLAYWRIGHT_PATH` and `RASTALOOP_CHROME_PATH` can point to an existing installation. Run with `RASTALOOP_RECORD=1` to capture the working demo. On Windows, run `video/render.py` with Pillow, FFmpeg, and Windows Speech to rebuild the film exports.
+
 - [Technical notes and credits](docs/technical.md)
 - [Field validation protocol](docs/fieldwork.md)
 - [Submission index](docs/submission.md)

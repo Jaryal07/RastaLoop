@@ -1,0 +1,8 @@
+.env*
+.git/
+.next/
+.rastaloop/
+node_modules/
+output/
+supabase/.temp/
+tmp/

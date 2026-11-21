@@ -32,7 +32,7 @@ LAUNCH = [
 INTRO = [
     (10, 'An essential trip can hinge on one ramp', 'CityFix · RastaLoop', 'photo', 'If a ramp becomes unusable, a short trip to a clinic can disappear from someone’s set of options.'),
     (10, 'What we are testing', 'Local corridor walk and interviews are pending', None, 'Published tools help people report barriers and plan accessible trips. Our local interviews and corridor walk will test what information people still need.'),
-    (10, 'Prioritize the trip a fix restores', 'One verified case, two destinations, one clear reason for priority', 'demo-verified', 'RastaLoop asks what would change if we cleared just this case. The answer is a destination, a shorter trip, or no change in this model.'),
+    (10, 'Prioritize the trip a fix restores', 'The ramp ranks ahead of a case that changes neither trip', 'demo-verified', 'RastaLoop asks what would change if we cleared just this case. The answer is a destination, a shorter trip, or no change in this model.'),
     (10, 'Follow the clinic curb ramp', 'Working demo · simulated corridor and team roles', 'demo-initial', 'Watch the step-free clinic route and the bus stop. We will report a ramp, verify it, record a repair, and have a separate person check the passage.'),
 ]
 DEMO_CUES = [
@@ -56,7 +56,8 @@ OUTRO = [
 
 
 def run(*args):
-    subprocess.run([FFMPEG, '-hide_banner', '-loglevel', 'error', '-y', *map(str, args)], check=True)
+    arguments = [item.as_posix() if isinstance(item, Path) else str(item) for item in args]
+    subprocess.run([FFMPEG, '-hide_banner', '-loglevel', 'error', '-y', *arguments], check=True)
 
 
 def text_lines(canvas, content, xy, size, width, fill, bold=False):
@@ -87,6 +88,7 @@ def slate(path, title, caption, key, portrait):
     brand = Image.open('design/route-loop.png').convert('RGBA').resize((60, 60), Image.Resampling.LANCZOS)
     image.paste(brand, (margin, 65), brand)
     text_lines(draw, 'RastaLoop', (margin + 77, 69), 36, 350, fg, True)
+    text_lines(draw, 'Simulated corridor', (width - 300, 81), 25, 230, sub)
     text_lines(draw, title, (margin, 177), 78 if portrait else 71, 940 if portrait else 640, fg, True)
     text_lines(draw, caption, (margin, 414), 42 if portrait else 32, 940 if portrait else 585, sub)
 
@@ -116,7 +118,6 @@ def slate(path, title, caption, key, portrait):
             draw.ellipse((x - radius, y - radius, x + radius, y + radius), outline=color, width=4)
         draw.ellipse((x + 127, y - 150, x + 159, y - 118), fill='#ae7942')
 
-    text_lines(draw, 'CityFix Buildathon 2026  /  Simulated corridor', (margin, height - (287 if portrait else 76)), 26 if portrait else 20, width - 2 * margin, sub)
     image.save(path)
 
 
@@ -131,12 +132,12 @@ def live_clip(target):
         raise ValueError('The browser emitted no frames.')
     lines = ['ffconcat version 1.0']
     for frame, following in zip(frames, frames[1:] + [{'seconds': 80}]):
-        absolute = (ROOT / frame['path']).as_posix()
-        lines.extend([f"file '{absolute}'", f"duration {max(1 / 120, following['seconds'] - frame['seconds']):.5f}"])
-    lines.append(f"file '{(ROOT / frames[-1]['path']).as_posix()}'")
+        filename = Path(frame['path']).name
+        lines.extend([f"file '../browser/frames/{filename}'", f"duration {max(1 / 120, following['seconds'] - frame['seconds']):.5f}"])
+    lines.append(f"file '../browser/frames/{Path(frames[-1]['path']).name}'")
     source = WORK / 'browser.ffconcat'
     source.write_text('\n'.join(lines), encoding='utf-8')
-    run('-f', 'concat', '-safe', '0', '-i', source, '-vf', 'scale=1440:900:force_original_aspect_ratio=decrease,pad=1600:900:(ow-iw)/2:(oh-ih)/2:0x163b3a,setsar=1,fps=24,tpad=stop_mode=clone:stop_duration=1',
+    run('-f', 'concat', '-safe', '0', '-i', source, '-vf', 'scale=1440:750:force_original_aspect_ratio=decrease,pad=1600:900:(ow-iw)/2:0:0x163b3a,setsar=1,fps=24,tpad=stop_mode=clone:stop_duration=1',
         '-t', '80', '-an', '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '20', '-pix_fmt', 'yuv420p', target)
 
 
@@ -211,7 +212,8 @@ def film(name, opening, ending=(), use_demo=False, portrait=False):
     audio, captions = narration(name, cues, at, portrait)
     target = OUT / f'{name}.mp4'
     size = 10 if portrait else 14
-    style = f'FontName=Segoe UI,FontSize={size},Bold=1,Outline=1,Shadow=0,BorderStyle=3,BackColour=&H30172F2D,MarginV=20'
+    margin = 20 if portrait else 8
+    style = f'FontName=Segoe UI,FontSize={size},Bold=1,Outline=1,Shadow=0,BorderStyle=3,BackColour=&H30172F2D,MarginV={margin}'
     run('-f', 'concat', '-safe', '0', '-i', manifest, '-i', audio, '-vf', f"subtitles={captions.as_posix()}:force_style='{style}'",
         '-c:v', 'libx264', '-preset', 'fast', '-crf', '21', '-c:a', 'aac', '-b:a', '128k', '-af', 'volume=1.1', '-t', at, '-movflags', '+faststart', target)
     print(f'{target}: {at} seconds')
