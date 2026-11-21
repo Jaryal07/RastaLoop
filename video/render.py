@@ -215,7 +215,7 @@ def film(name, opening, ending=(), use_demo=False, portrait=False):
     margin = 20 if portrait else 8
     style = f'FontName=Segoe UI,FontSize={size},Bold=1,Outline=1,Shadow=0,BorderStyle=3,BackColour=&H30172F2D,MarginV={margin}'
     run('-f', 'concat', '-safe', '0', '-i', manifest, '-i', audio, '-vf', f"subtitles={captions.as_posix()}:force_style='{style}'",
-        '-c:v', 'libx264', '-preset', 'fast', '-crf', '21', '-c:a', 'aac', '-b:a', '128k', '-af', 'volume=1.1', '-t', at, '-movflags', '+faststart', target)
+        '-c:v', 'libx264', '-preset', 'fast', '-crf', '21', '-c:a', 'aac', '-b:a', '128k', '-af', 'loudnorm=I=-18:TP=-1.5:LRA=11', '-ar', '48000', '-t', at, '-movflags', '+faststart', target)
     print(f'{target}: {at} seconds')
 
 
