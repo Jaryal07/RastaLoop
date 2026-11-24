@@ -13,8 +13,13 @@ export const observations = {
   uncertain: 'Needs a closer look',
 } as const
 export const caseStatuses = {
-  reported: 'Needs verification', verified: 'Verified', assigned: 'Assigned', recheck: 'Awaiting recheck', closed: 'Closed',
+  reported: 'Needs verification', verified: 'Verified', assigned: 'Assigned', recheck: 'Awaiting recheck', closed: 'Closed', dismissed: 'Dismissed',
 } as const
+export const dismissalReasons = {
+  clear: 'Passage clear on inspection',
+  location: 'Report refers to a different segment',
+} as const
+
 export const actors = {
   resident: { name: 'Resident', person: 'Asha' },
   reviewer: { name: 'Reviewer', person: 'Isha' },
@@ -31,7 +36,7 @@ type ObservationKind = keyof typeof observations
 type Status = keyof typeof caseStatuses
 export type Actor = keyof typeof actors
 export type Evidence = keyof typeof evidence
-type EventKind = 'report' | 'observe' | 'verify' | 'assign' | 'repair' | 'pass' | 'fail'
+type EventKind = 'report' | 'observe' | 'verify' | 'assign' | 'repair' | 'pass' | 'fail' | 'dismiss'
 
 export type Observation = { at: string; kind: ObservationKind }
 export type CaseEvent = { at: string; actor: Actor; kind: EventKind; detail: string }
@@ -50,12 +55,13 @@ export type Action =
   | { kind: 'report'; actor: 'resident'; segmentId: string; category: Category; observation: ObservationKind; duplicateChoice?: 'separate' }
   | { kind: 'observe'; actor: 'resident'; caseId: string; segmentId: string; category: Category; observation: ObservationKind }
   | { kind: 'verify' | 'assign' | 'pass' | 'fail'; actor: Actor; caseId: string }
+  | { kind: 'dismiss'; actor: Actor; caseId: string; reason: keyof typeof dismissalReasons }
   | { kind: 'repair'; actor: Actor; caseId: string; evidence: Evidence }
 
 export class WorkflowError extends Error {}
 
 const expectedActor: Record<EventKind, Actor> = {
-  report: 'resident', observe: 'resident', verify: 'reviewer', assign: 'operator', repair: 'operator', pass: 'inspector', fail: 'inspector',
+  report: 'resident', observe: 'resident', verify: 'reviewer', assign: 'operator', repair: 'operator', pass: 'inspector', fail: 'inspector', dismiss: 'reviewer',
 }
 
 export function seedDemo(now: Date): DemoState {
@@ -72,7 +78,7 @@ export function seedDemo(now: Date): DemoState {
 }
 
 export function matchingCases(state: DemoState, segmentId: string, category: string): Issue[] {
-  return state.cases.filter(issue => issue.segmentId === segmentId && issue.category === category && issue.status !== 'closed')
+  return state.cases.filter(issue => issue.segmentId === segmentId && issue.category === category && issue.status !== 'closed' && issue.status !== 'dismissed')
 }
 
 export function isBlocking(issue: Issue): boolean {
@@ -144,6 +150,11 @@ export function applyAction(state: DemoState, action: Action, at: string, newId:
       update = { observations: [...issue.observations, { at, kind: action.observation }] }
       detail = observations[action.observation]
       break
+    case 'dismiss':
+      requireStatus(issue, 'reported')
+      update = { status: 'dismissed' }
+      detail = dismissalReasons[action.reason]
+      break
     case 'verify':
       requireStatus(issue, 'reported')
       update = { status: 'verified', verifiedAt: at }
@@ -198,6 +209,10 @@ export function parseAction(input: unknown): { version: number; action: Action }
   }
 
   if (typeof caseId !== 'string' || caseId.length > 64) return null
+  if (kind === 'dismiss') {
+    if (!hasKey(dismissalReasons, value.reason)) return null
+    return { version, action: { kind, actor, caseId, reason: value.reason } }
+  }
   if (kind === 'repair') {
     if (!hasKey(evidence, value.evidence)) return null
     return { version, action: { kind, actor, caseId, evidence: value.evidence } }

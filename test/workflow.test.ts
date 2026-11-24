@@ -86,3 +86,16 @@ test('API action validation rejects invalid values and negative versions', () =>
   assert.equal(parseAction({ ...report, version: 0, actor: 'operator' }), null)
   assert.equal(parseAction({ ...report, version: 0 })?.action.kind, 'report')
 })
+
+test('a reviewer can dismiss an unverified report and record the reason without changing access', () => {
+  const state = change(original(), report)
+  const action = { kind: 'dismiss', actor: 'reviewer', caseId: 'clinic-ramp', reason: 'clear' } as const
+  assert.equal(parseAction({ ...action, reason: 'invalid', version: 1 }), null)
+  assert.throws(() => change(state, { ...action, actor: 'operator' }), WorkflowError)
+  const reviewed = change(state, action)
+  assert.equal(reviewed.cases.at(-1)?.history.at(-1)?.detail, 'Passage clear on inspection')
+  assert.equal(reviewed.cases.at(-1)?.status, 'dismissed')
+  assert.equal(clinic(reviewed), 320)
+  assert.throws(() => change(reviewed, action), WorkflowError)
+  assert.equal(change(reviewed, report, 'second-report').cases.at(-1)?.status, 'reported')
+})

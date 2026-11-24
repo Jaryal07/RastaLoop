@@ -3,10 +3,11 @@
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
+import { RepairPlanner } from './repair-planner'
 import { CorridorMap } from './corridor-map'
 import { destinations, findTrip, nodes, profiles, segments } from '../../lib/corridor'
 import type { Destination, Profile, Trip } from '../../lib/corridor'
-import { actors, blockedSegments, caseStatuses, categories, evidence, isBlocking, matchingCases, observations, rankedCases } from '../../lib/workflow'
+import { actors, blockedSegments, caseStatuses, categories, dismissalReasons, evidence, isBlocking, matchingCases, observations, rankedCases } from '../../lib/workflow'
 import type { Action, Actor, DemoState, Evidence, Issue, Priority } from '../../lib/workflow'
 
 type Snapshot = { state: DemoState; version: number }
@@ -95,7 +96,7 @@ export function Demo() {
       else setSelectedId(action.caseId)
       const feedback = {
         report: 'Report saved. Switch to Reviewer to verify the barrier.', observe: 'Observation added to the existing case.',
-        verify: 'Barrier verified. Check the routes and the repair queue.', assign: 'Case assigned. You can now record repair evidence.',
+        dismiss: 'Report dismissed. The review reason is in the case history.', verify: 'Barrier verified. Check the routes and the repair queue.', assign: 'Case assigned. You can now record repair evidence.',
         repair: 'Repair recorded. Switch to Rechecker to inspect the passage.',
         fail: 'Passage is still blocked. The case has returned to the repair queue.', pass: 'Passage is clear. The case is closed and routes have been recalculated.',
       }
@@ -124,7 +125,7 @@ export function Demo() {
 
   return <>
     <div className="demo-intro">
-      <div><p className="eyebrow"><span className="status-dot" /> Interactive sandbox</p><h1 id="main" tabIndex={-1}>Neighborhood corridor</h1><p>Follow a street obstruction from first report to a confirmed repair.</p></div>
+      <div><p className="eyebrow"><span className="status-dot" /> Corridor operations</p><h1 id="main" tabIndex={-1}>Market corridor</h1><p>Review access to the clinic and bus stop, then prioritize repairs.</p></div>
       <button className="button button-outline button-small" type="button" onClick={reset} disabled={busy}><span aria-hidden="true">↻</span> {snapshot ? 'Reset demo' : 'Start demo'}</button>
     </div>
 
@@ -132,6 +133,11 @@ export function Demo() {
     <div className="feedback" role="status">{notice}</div>
     {error && <div className="error" role="alert">{error}</div>}
     {!state ? <p className="loading-state" role="status">{busy ? 'Opening the demo corridor…' : 'Start a new demo session to continue.'}</p> : <>
+      <dl className="workspace-stats">
+        <div><dt>Reports to review</dt><dd>{state.cases.filter(issue => issue.status === 'reported').length}</dd></div>
+        <div><dt>Blocked segments</dt><dd>{blocked.size}</dd></div>
+        <div><dt>Awaiting recheck</dt><dd>{state.cases.filter(issue => issue.status === 'recheck').length}</dd></div>
+      </dl>
       <div className="dashboard-grid">
         <section className="panel route-panel" aria-labelledby="routes-title">
           <div className="panel-top"><div><h2 id="routes-title">Corridor routes</h2><p>From Market entrance</p></div>
@@ -176,6 +182,7 @@ export function Demo() {
         </section>
       </div>
 
+      <RepairPlanner issues={state.cases} />
       <div className="dashboard-grid queue-grid">
         <section className="panel list-panel" aria-labelledby="queue-title">
           <div className="panel-top"><div><h2 id="queue-title">Repair queue</h2><p>Ordered by step-free trips restored, detour metres saved, then time verified.</p></div></div>
@@ -196,9 +203,12 @@ export function Demo() {
 
 function RoleActions({ issue, actor, busy, send }: { issue: Issue; actor: Actor; busy: boolean; send: (action: Action) => void }) {
   const [repair, setRepair] = useState<Evidence>('passage-cleared')
+  const [reason, setReason] = useState<keyof typeof dismissalReasons>('clear')
   const segment = segments.find(candidate => candidate.id === issue.segmentId)
   let action = <p className="action-hint">Choose a case in the repair queue that is ready for this role.</p>
-  if (actor === 'reviewer' && issue.status === 'reported') action = <button type="button" className="button button-dark" disabled={busy} onClick={() => send({ kind: 'verify', actor, caseId: issue.id })}>Verify barrier</button>
+  if (actor === 'reviewer' && issue.status === 'reported') action = <div className="report-form"><button type="button" className="button button-dark" disabled={busy} onClick={() => send({ kind: 'verify', actor, caseId: issue.id })}>Verify barrier</button>
+    <details><summary>Dismiss report</summary><label>Review reason<select value={reason} onChange={event => setReason(event.target.value as keyof typeof dismissalReasons)}>{Object.entries(dismissalReasons).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
+    <button className="button button-outline" disabled={busy} onClick={() => send({ kind: 'dismiss', actor, caseId: issue.id, reason })}>Confirm dismissal</button></details></div>
   if (actor === 'operator' && issue.status === 'verified') action = <button type="button" className="button button-dark" disabled={busy} onClick={() => send({ kind: 'assign', actor, caseId: issue.id })}>Assign maintenance</button>
   if (actor === 'operator' && issue.status === 'assigned') action = <form className="report-form" onSubmit={event => { event.preventDefault(); send({ kind: 'repair', actor, caseId: issue.id, evidence: repair }) }}>
     <label>Sample repair evidence<select value={repair} onChange={event => setRepair(event.target.value as Evidence)}>{Object.entries(evidence).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label>
@@ -218,7 +228,7 @@ function CaseDetails({ issue, priority }: { issue: Issue; priority?: Priority })
       <button className="button button-outline button-small" type="button" onClick={() => window.print()}>Print handoff</button>
     </div>
     <div className="handoff-summary"><strong>{categories[issue.category]}</strong> · {caseStatuses[issue.status]}
-      <p>{priority?.explanation ?? (issue.status === 'closed' ? 'Independent recheck complete.' : 'Priority is calculated after verification.')}</p>
+      <p>{priority?.explanation ?? (issue.status === 'dismissed' ? 'Report dismissed during review.' : issue.status === 'closed' ? 'Independent recheck complete.' : 'Priority is calculated after verification.')}</p>
       <p>Latest observation: {observations[issue.observations.at(-1)!.kind]} · {time(issue.observations.at(-1)!.at)}</p>
     </div>
     {issue.repair && issue.segmentId === 'ramp' && <details className="sample-evidence"><summary>View sample repair photo</summary><figure>

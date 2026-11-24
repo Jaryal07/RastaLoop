@@ -205,3 +205,33 @@ h2 { font-size: clamp(28px, 3vw, 43px); line-height: 1.14; letter-spacing: -.045
   .history-panel { border: 0; }
   .history-panel h2::before { content: 'RastaLoop simulated repair handoff - '; }
 }
+
+/* Corridor workspace */
+:root { --ink: #152f37; --deep: #103e45; --teal: #096958; --paper: #f4f6f3; --white: #fff; --font: Inter, 'Segoe UI', system-ui, sans-serif; }
+.site-header { background: white; }
+.hero-content h1 em { font-family: Georgia, serif; font-weight: 500; font-style: italic; }
+.hero-photo { border-radius: 6px 34px 6px 6px; }
+.demo-intro { background: #123c41; color: white; border-radius: 18px; padding: clamp(18px, 3vw, 38px); }
+.demo-intro p:not(.eyebrow), .demo-intro .eyebrow { color: #c2e8da; }
+.demo-intro .button { color: white; border-color: #8eb3ab; }
+.demo-intro .button:hover:not(:disabled) { background: #235759; }
+.workspace-stats { margin: 16px 0 22px; display: grid; grid-template-columns: repeat(3, 1fr); background: white; border: 1px solid var(--line); border-radius: 14px; }
+.workspace-stats div { padding: clamp(10px, 2vw, 24px); }
+.workspace-stats div + div { border-left: 1px solid var(--line); }
+.workspace-stats dt { color: var(--muted); font-size: .85rem; }
+.workspace-stats dd { margin: 2px 0 0; font-size: clamp(24px, 3vw, 38px); line-height: 1.15; font-weight: 700; font-variant-numeric: tabular-nums; }
+.planner { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 20px 0; border-top: 4px solid var(--teal); }
+.planner h2 { font-size: 1.6rem; }
+.planner p, .planner legend { color: var(--muted); }
+.planner fieldset { padding: 0; border: 0; margin: 14px 0 0; }
+.planner legend, .planner caption { font-weight: 700; text-align: left; }
+.planner label { display: flex; gap: 10px; align-items: center; min-height: 44px; cursor: pointer; }
+.planner input { width: 18px; height: 18px; accent-color: var(--teal); flex-shrink: 0; }
+.planner-results { background: #eff6f2; padding: 16px; border-radius: 12px; align-self: start; }
+.planner table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+.planner th, .planner td { text-align: left; border-bottom: 1px solid #c8dace; padding: 9px 3px; }
+.planner td strong { display: block; color: var(--teal); }
+.report-form details summary { cursor: pointer; padding-block: 10px; }
+.report-form details button { margin-top: 12px; }
+@media (max-width: 760px) { .planner { grid-template-columns: 1fr; } .planner-results { padding: 10px; } }
+@media print { .workspace-stats, .planner { display: none; } }

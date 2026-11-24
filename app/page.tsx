@@ -14,9 +14,9 @@ export default function Home() {
     <main>
       <section className="hero container" aria-labelledby="main">
         <div className="hero-content">
-          <p className="eyebrow"><span className="status-dot" /> A CityFix buildathon prototype</p>
-          <h1 id="main" tabIndex={-1}>Can you still get<br className="hero-break" /> to the <em>clinic?</em></h1>
-          <p className="hero-text">A blocked ramp can change an entire trip. RastaLoop shows which destinations you can still reach and which repairs would open the way.</p>
+          <p className="eyebrow"><span className="status-dot" /> Street accessibility workspace</p>
+          <h1 id="main" tabIndex={-1}>Which repair brings a <em>route back?</em></h1>
+          <p className="hero-text">Trace a blocked trip from resident report to field recheck. Compare repairs before deciding where to send a crew.</p>
           <div className="hero-actions"><Link className="button button-dark" href="/demo">Try the demo <span aria-hidden="true">↗</span></Link><a className="text-link" href="#how-it-works">How it works <span aria-hidden="true">↓</span></a></div>
         </div>
         <figure className="hero-photo">
