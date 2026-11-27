@@ -23,11 +23,13 @@ Open `http://localhost:3000` for the landing page or `/demo` for the interactive
 
 Use **Print handoff** on a selected case to print its location, observed barrier, priority reason, and history.
 
-## Deploy
+## Deploy the prototype
+
+This deployment runs the synthetic demo only. It is not a real-world reporting or municipal operations system: roles are simulated, there is no staff authentication or moderation, and the corridor/evidence are sample data. Do not submit real resident information or photos. See [pilot readiness](docs/pilot-readiness.md) before planning a field pilot.
 
 1. Create a Supabase project and run [the migration](supabase/migrations/202611210001_demo_sessions.sql) in its SQL Editor.
 2. Create a Next.js project on Vercel using this repository. Select Node.js 24.x. Set `SUPABASE_URL` to the project URL and `SUPABASE_SERVICE_ROLE_KEY` to a Supabase server-only secret key or legacy service-role key in the hosting settings. `.env.example` lists the required names. Local runs without these settings use SQLite and accept an optional `RASTALOOP_DB_PATH` override.
-3. Deploy, then confirm the production landing page and `/demo` open in a signed-out browser. Run the live API smoke test and complete the browser walkthrough.
+3. Deploy, then confirm the production landing page and `/demo` open in a signed-out browser. Run the live API smoke test and complete the browser walkthrough. This validates the demo deployment only; it is not a production-readiness sign-off for handling real reports.
 
 ## Verify
 
@@ -38,9 +40,10 @@ npm run build
 
 With the app running on `http://127.0.0.1:3000`, use `npm run test:live`. Set `RASTALOOP_TEST_URL` to test another origin. The smoke test covers concurrent writes, simulated role permissions, session isolation, and reset.
 
-The browser walkthrough lives in `test/browser.cjs`. It requires Playwright and a Chromium browser. `PLAYWRIGHT_PATH` and `RASTALOOP_CHROME_PATH` can point to an existing installation. Run with `RASTALOOP_RECORD=1` to capture the working demo. On Windows, run `video/render.py` with Pillow, FFmpeg, and Windows Speech to rebuild the film exports.
+The browser walkthrough lives in `test/browser.cjs` and runs with `npm run test:browser`. Install its Chromium browser once with `npx playwright install chromium`. `RASTALOOP_CHROME_PATH` can point to an existing Chromium installation. Run with `RASTALOOP_RECORD=1` to capture the working demo. On Windows, run `video/render.py` with Pillow, FFmpeg, and Windows Speech to rebuild the film exports.
 
 - [Technical notes and credits](docs/technical.md)
 - [Field validation protocol](docs/fieldwork.md)
+- [Neighborhood pilot readiness](docs/pilot-readiness.md)
 - [Submission index](docs/submission.md)
 - [Social drafts](docs/social.md)

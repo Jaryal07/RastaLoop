@@ -20,7 +20,7 @@ let localDb: DatabaseSync | undefined
 
 function sqlite(): DatabaseSync {
   if (localDb) return localDb
-  const path = resolve(process.env.RASTALOOP_DB_PATH || '.rastaloop/demo.sqlite')
+  const path = resolve(/*turbopackIgnore: true*/ process.env.RASTALOOP_DB_PATH || '.rastaloop/demo.sqlite')
   mkdirSync(dirname(path), { recursive: true })
   const db = new DatabaseSync(path)
   db.exec(`

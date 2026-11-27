@@ -10,6 +10,15 @@ async function call(path = '/api/demo', { cookie, data, origin = base } = {}) {
   return { status: response.status, cookie: response.headers.get('set-cookie')?.split(';')[0], body: await response.json() }
 }
 
+test('serves baseline security headers', async () => {
+  const response = await fetch(base)
+  assert.equal(response.status, 200)
+  assert.equal(response.headers.get('x-content-type-options'), 'nosniff')
+  assert.equal(response.headers.get('referrer-policy'), 'strict-origin-when-cross-origin')
+  assert.equal(response.headers.get('x-frame-options'), 'DENY')
+  assert.equal(response.headers.get('permissions-policy'), 'camera=(), microphone=(), geolocation=(self)')
+})
+
 test('persisted demo state is scoped, atomic and resettable through the public API', async () => {
   assert.equal((await call()).status, 404)
   assert.equal((await call('/api/demo', { data: {}, origin: 'https://another-site.example' })).status, 403)
